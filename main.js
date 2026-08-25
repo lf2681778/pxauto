@@ -69,10 +69,10 @@ async function main() {
 
     console.log(`共讀取到 ${vendors.length} 家店家，準備開始執行...`);
 
-    for (let i = 0; i < vendors.length; i += 10) {
-        const batch = vendors.slice(i, i + 10);
-        await Promise.all(batch.map(vid => updateVendor(token, vid)));
-        await new Promise(r => setTimeout(r, 2000)); 
+for (let i = 0; i < vendors.length; i++) {
+        const vid = vendors[i];
+        await updateVendor(token, vid);
+        await new Promise(r => setTimeout(r, 500)); 
     }
     
     // --- 執行完畢後的最終檢查 ---
