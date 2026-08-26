@@ -2,7 +2,7 @@ name: Daily Auto Open
 on:
   schedule:
     - cron: '00 3,8,10,13 * * *' 
-  workflow_dispatch: # 手動觸發按鈕
+  workflow_dispatch:
 
 jobs:
   update-status:
