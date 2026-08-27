@@ -57,7 +57,7 @@ async function updateVendor(token, vendorId) {
 
 async function main() {
     const token = await getToken();
-    const workbook = XLSX.readFile('VendorPX.xlsx');
+    const workbook = XLSX.readFile('VendorPX');
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
     
