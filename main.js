@@ -5,8 +5,10 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const CHAIN_ID = process.env.CHAIN_ID;
 
-// 新增一個變數來記錄失敗次數
+// === 你可以在這裡修改容忍值 ===
+const ERROR_THRESHOLD = 100; 
 let errorCount = 0;
+let successCount = 0; 
 
 async function getToken() {
     if (!CLIENT_ID || !CLIENT_SECRET) {
@@ -45,13 +47,14 @@ async function updateVendor(token, vendorId) {
         
         if (res.ok) {
             console.log(`✅ [${vendorId}] 更新成功`);
+            successCount++; 
         } else {
             console.log(`❌ [${vendorId}] 更新失敗: ${await res.text()}`);
-            errorCount++; // 失敗時，錯誤計數器 +1
+            errorCount++; 
         }
     } catch (err) {
         console.log(`❌ [${vendorId}] 網路錯誤: ${err.message}`);
-        errorCount++; // 失敗時，錯誤計數器 +1
+        errorCount++; 
     }
 }
 
@@ -69,19 +72,25 @@ async function main() {
 
     console.log(`共讀取到 ${vendors.length} 家店家，準備開始執行...`);
 
-for (let i = 0; i < vendors.length; i++) {
+    for (let i = 0; i < vendors.length; i++) {
         const vid = vendors[i];
         await updateVendor(token, vid);
         await new Promise(r => setTimeout(r, 500)); 
     }
     
-    // --- 執行完畢後的最終檢查 ---
-    if (errorCount > 0) {
-        console.log(`\n⚠️ 警告：全部執行完畢，但共有 ${errorCount} 家店鋪更新失敗！`);
-        // 強制讓 GitHub 亮紅燈，這會自動觸發系統發送失敗通知信給你的信箱！
+    // === 將結果數字寫入，交接給 GitHub Actions ===
+    if (process.env.GITHUB_OUTPUT) {
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, `success_count=${successCount}\n`);
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, `error_count=${errorCount}\n`);
+    }
+
+    // === 最終檢查邏輯 ===
+    if (errorCount > ERROR_THRESHOLD) {
+        console.log(`\n🚨 警告：共有 ${errorCount} 家店鋪更新失敗，已超過容忍值！`);
         process.exit(1); 
     } else {
-        console.log("\n🎉 全部執行完畢，完美無缺！");
+        console.log(`\n🎉 執行完畢！成功: ${successCount}, 失敗: ${errorCount}`);
+        process.exit(0);
     }
 }
 
